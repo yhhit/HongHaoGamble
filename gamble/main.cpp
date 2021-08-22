@@ -119,14 +119,14 @@ public:
             cout<<endl;
             cout<<"游戏结束,资金不足!"<<endl;
             cout<<"玩家编号:"<<mOrder<<endl;
-            cout<<"游戏轮数:"<<mPlayTimes<<endl;
+            cout<<"游戏期数:"<<mPlayTimes<<endl;
             cout<<"起始资金:"<<getPropertyInitial()<<endl;
             cout<<"现有资金:"<<getProperty()<<endl;
             cout<<"总盈利:"<<getProfit()<<endl;
             cout<<"最高连输次数:"<<mMaxLossTimes<<" 最高下注倍数:"<<mMaxTimes<<" "<<"金额:"<<mMaxTimes*6<<endl;
             cout<<"最高所需下注倍数:"<<mMaxTimes<<" "<<"金额:"<<mMaxTimes*6<<endl;
             cout<<"最高历史资金:"<<mMaxProperty<<" "<<"最低历史资金:"<<mMinProperty<<" 最高历史收益率:"<<(mMaxProperty/mPropertyInitial-1)*100<<"%"<<endl;
-            cout<<"盈利次数:"<<mWinTimes<<" "<<"亏损次数:"<<mLossTimes<<"盈利频率:"<<(float)(mWinTimes)/(mLossTimes+mWinTimes)<<endl;
+            cout<<"盈利次数:"<<mWinTimes<<" "<<"未中奖次数:"<<mLossTimes<<"盈利频率:"<<(float)(mWinTimes)/(mLossTimes+mWinTimes)<<endl;
         }
         mDead=true;
     }
@@ -176,17 +176,18 @@ public:
             cout<<endl;
             
             if(flag){
-                cout<<"恭喜中奖!盈利:";
-                cout<<mTimesRate*lTimes<<"元"<<endl;
+                cout<<"恭喜中奖";
+                cout<<mTimesRate*lTimes<<"元!";
             }else{
-                cout<<"未中奖!,购买号码花费:"<<mNumCount*lTimes<<"元"<<endl;
+                cout<<"未中奖!";
             }
+            cout<<"购买号码花费:"<<mNumCount*lTimes<<"元"<<endl;
             cout<<"玩家编号:"<<mOrder<<endl;
-            cout<<"游戏轮数:"<<mPlayTimes<<endl;
+            cout<<"游戏期数:"<<mPlayTimes<<endl;
             cout<<"起始资金:"<<getPropertyInitial()<<endl;
             cout<<"现有资金"<<getProperty()<<endl;
             cout<<"总盈利"<<getProfit()<<endl;
-            cout<<"中奖次数:"<<mWinTimes<<" "<<"亏损次数:"<<mLossTimes<<" 中奖频率:"<<(float)(mWinTimes)/(mLossTimes+mWinTimes)<<endl;
+            cout<<"中奖次数:"<<mWinTimes<<" "<<"未中奖次数:"<<mLossTimes<<" 中奖频率:"<<(float)(mWinTimes)/(mLossTimes+mWinTimes)<<endl;
             cout<<"本次下注倍率:"<<lTimes<<endl<<"本次下注金额:"<<mNumCount*lTimes<<endl;
             cout<<"本次盈利:";
             if(flag)
@@ -271,7 +272,7 @@ public:
         else
             averDeficit=0;
         cout<<endl;
-        cout<<"游戏结束,所有玩家失败!"<<endl;
+        cout<<"所有玩家退出游戏!"<<endl;
         cout<<"游戏模式“";
         switch (PlayMode)
         {
@@ -297,7 +298,7 @@ public:
         cout<<"盈利超过1000%的玩家数:"<<profitBigger1000p<<endl;
         cout<<"最高盈利倍率:"<< maxProfitRate*100<< "%" <<"最高盈利金额:"<< maxProfit <<endl;
         cout<<"历史最高盈利倍率:"<< maxProfitRateHis*100<< "%" <<"历史最高盈利金额:"<< maxProfitHis <<
-            "游戏轮数:"<<playTimes<<endl;
+            "最高收益的游戏期数:"<<playTimes<<endl;
         cout<<"输入任意内容并回车,重新开始游戏!\n";
         char a;
         cin>>a;
@@ -317,8 +318,8 @@ public:
             if(PlayMode==4&&!inputBetArr){
                 numCount=10;
                 cout<<endl;
-                cout<<"请输入您本期购买的号码(1~10任选),号码之间以空格分隔,以#号结束(不输入为不购买)(例:1 2 4 5 6#)：";
-                for(int i=0;i<10;i++){
+                cout<<"请输入您本期购买的号码(1~10任选),号码之间以空格分隔,以#号结束(不输入为不购买)\n(例:1 2 4 5 6#)(退出游戏请输入q按回车)：";
+                for(int i=0;i<11;i++){
                     cin>>betArr[i];
                     if(cin.fail()){
                         char a;
@@ -327,8 +328,12 @@ public:
                         if(a=='#'){
                             numCount=i;
                             break;
+                        }else if(a=='q'){
+                            gameOver(maxProfitRate,maxProfit,playTimes);
+                            return;
                         }else
                             i--;
+                            
                     }
                         
                 }
@@ -371,7 +376,7 @@ public:
                     if(time(NULL)-timeLastRunTip>=IntervalRunTip){
                         timeLastRunTip=time(NULL);
                         cout<<"程序仍在运行中... 目前最高盈利倍率:"<< maxProfitRate*100<< "%" <<" 最高盈利金额:"<< maxProfit <<
-                            "游戏轮数:"<<playTimes<<endl;
+                            "游戏期数:"<<playTimes<<endl;
                     }
                 }
                 timeLast=time(NULL);
@@ -405,7 +410,7 @@ void help(){
     cout<<"可以选择加倍购买,2倍就是一个号码2块钱。\n";
     cout<<"每局开盘会从1~10中随机抽取一个号码作为开奖结果。\n";
     cout<<"如果购买的号码中包含开奖结果则中奖,否则不中奖。奖金额为 “中奖系数*购买倍数” 一般中奖系数设置为9.8。\n";
-    cout<<"比如购买号码2,3两个号码3倍率,花费2*3=6元,若开奖结果为2或3则中奖后获得9.8*3=29.4元。\n";
+    cout<<"比如购买号码2,3两个号码3倍率,花费2*3=6元,若开奖结果为2或3则中奖后获得9.8*3=29.4元,净收入23.4元。\n";
     cout<<"很多玩家认为,使用翻倍购买法可以稳赚,即第一次购买1倍率,如果输了第二次购买2倍率,如果再输了购买5倍率。\n";
     cout<<"只要赢一次就可以将本金赚回还能再赚一小部分,从而永不亏损,本程序模拟了此行为。\n";
     cout<<"鸿昊赌徒系数适量的增大了输掉后翻倍的购买倍数,可以极大的减少玩家游戏轮次,但对于玩家平均盈利率与玩家最高盈利率会产生一定影响!\n";
@@ -430,6 +435,10 @@ int main(){
             cout<<"8.切换资金不足是否重置购买倍数,目前状态(重置)(自动模式的配置)"<<endl;
         else
             cout<<"8.切换资金不足是否重置购买倍数,目前状态(不重置)(自动模式的配置)"<<endl;
+#ifdef ANDROID
+        cout<<"\n提示：由于安卓系统限制，应用在锁屏或后台情况下可能会终止，请确保手机不会锁屏或在后台停留太久，建议使用电脑版！可访问www.yhhit.xyz下载!\n\n";
+        cout<<"提示：更新应用必须卸载之前版本，否则虽然安装成功但是软件内容并不会更新!\n\n";
+#endif
         static bool faultFlag=false;
         if(faultFlag){
             cout<<"输入有误请重新输入:";
