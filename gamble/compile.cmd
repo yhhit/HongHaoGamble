@@ -1,0 +1,1 @@
+g++ main.cpp -o release.exe -O2 -static -fexec-charset=GBK -s

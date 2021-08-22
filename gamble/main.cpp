@@ -3,17 +3,21 @@
 #include<time.h>
 #include<vector>
 #include<string>
-
+#include<fstream>
 //操作系统,WINDWOS LINUX ANDROID
 #define WINDOWS
 
 using namespace std;
 
 typedef double T_MONEY;
+
+//全局常量
+//鸿昊赌徒系数默认值,乘入mProfitRate可以减少赌局次数,增大盈利率和盈利金额
+const float GambleRateFaultDefault=0.01;
+const string SavePathSimulation="./archive.inf";
 //游戏模式
 long long PlayMode;
 //鸿昊赌徒系数,乘入mProfitRate可以减少赌局次数,增大盈利率和盈利金额
-const float GambleRateFault=0.01;
 float GambleRate=1;
 //失败是否重新设置购买倍数
 bool FailReset=false;
@@ -55,7 +59,7 @@ private:
     void fail(){
         T_MONEY money=mNumCount*mTimes;
         mLossMoney+=money;
-        mTimes=(mLossMoney/mProfitRate)/10+1+10;
+        mTimes=(mLossMoney/mProfitRate)/10+1;
         mLossTimes++;
         mMaxLossTimes++;
         if(mTimes>mMaxTimes)
@@ -88,41 +92,38 @@ public:
         mMaxProperty=mMinProperty=mProperty;
     }
     //从文件中还原Player
-    Player(string path){
-
+    bool readArchive(){
+        fstream file;
+        file.open(SavePathSimulation,ios::in|ios::binary);
+        if(!file.fail()){
+            //获取文件大小并重置文件指针
+            file.seekg(0, ios::end);
+	        size_t size = file.tellg();
+            file.seekg(0,ios::beg);
+            //判断文件是否完整并读入
+            if(size==sizeof(*this)){
+                file.read((char*)this,sizeof(*this));
+                file.close();
+                return true;
+            }
+            else{
+                file.close();
+                remove(SavePathSimulation.c_str());
+            }
+        }
+        return false;
     }
     void save(){
-        
-        //玩家起始资产
-        T_MONEY mPropertyInitial;
-        //玩家现有资产
-        T_MONEY mProperty;
-        //玩家编号5
-        long long mOrder;
-        //玩家游戏次数
-        long long mPlayTimes=0;
-        //以下变量用于计算翻倍后的下注金额
-        //玩家起始下注倍数
-        long long mTimesInitial;
-        //玩家下次下注倍数,如果中奖重置为玩家起始下注倍数
-        long long mTimes;
-        //玩家连续赔钱总额,中奖后重置
-        long long mLossMoney=0;
-        //玩家 中奖金额后去除本金所能获得的收益 单次
-        double mProfitRate;
-        //以下变量用于下注
-        long long mNumCount;
-        long long mBetArrInitial[10]{2,4,6,8,9,10,1,3,5,7};
-        long long mBetArr[10]{2,4,6,8,9,10,1,3,5,7};
-        //计算盈利金额,盈利金额=倍数*timesRate
-        float mTimesRate;
-        long long mMaxTimes=1;
-        T_MONEY mMaxProperty;
-        T_MONEY mMinProperty;
-        long long mWinTimes=0;
-        long long mLossTimes=0;
-        long long mMaxLossTimes=0;
-        bool mDead=false;
+        fstream file;
+        file.open(SavePathSimulation,ios::out|ios::binary);
+        file.write((const char*)this,sizeof(*this));
+        file.close();
+    }
+    void delArchive(){
+        remove(SavePathSimulation.c_str());
+    }
+    void setPropertyInitialAndProperty(T_MONEY val){
+        mPropertyInitial=mProperty=val;
     }
     T_MONEY getPropertyInitial(){
         return mPropertyInitial;
@@ -151,19 +152,22 @@ public:
     void setTimes(long long times){
         mTimes=times;
     }
+    void printDetail(){
+        cout<<"玩家编号:"<<mOrder<<endl;
+        cout<<"游戏期数:"<<mPlayTimes<<endl;
+        cout<<"起始资金:"<<getPropertyInitial()<<endl;
+        cout<<"现有资金:"<<getProperty()<<endl;
+        cout<<"总盈利:"<<getProfit()<<endl;
+        cout<<"最高连输次数:"<<mMaxLossTimes<<" 最高下注倍数:"<<mMaxTimes<<" "<<"金额:"<<mMaxTimes*6<<endl;
+        cout<<"最高所需下注倍数:"<<mMaxTimes<<" "<<"金额:"<<mMaxTimes*6<<endl;
+        cout<<"最高历史资金:"<<mMaxProperty<<" "<<"最低历史资金:"<<mMinProperty<<" 最高历史收益率:"<<(mMaxProperty/mPropertyInitial-1)*100<<"%"<<endl;
+        cout<<"中奖次数:"<<mWinTimes<<" "<<"未中奖次数:"<<mLossTimes<<"中奖频率:"<<(float)(mWinTimes)/(mLossTimes+mWinTimes)<<endl;
+    }
     void gameOver(){
         if(PlayMode!=3){
             cout<<endl;
             cout<<"游戏结束,资金不足!"<<endl;
-            cout<<"玩家编号:"<<mOrder<<endl;
-            cout<<"游戏期数:"<<mPlayTimes<<endl;
-            cout<<"起始资金:"<<getPropertyInitial()<<endl;
-            cout<<"现有资金:"<<getProperty()<<endl;
-            cout<<"总盈利:"<<getProfit()<<endl;
-            cout<<"最高连输次数:"<<mMaxLossTimes<<" 最高下注倍数:"<<mMaxTimes<<" "<<"金额:"<<mMaxTimes*6<<endl;
-            cout<<"最高所需下注倍数:"<<mMaxTimes<<" "<<"金额:"<<mMaxTimes*6<<endl;
-            cout<<"最高历史资金:"<<mMaxProperty<<" "<<"最低历史资金:"<<mMinProperty<<" 最高历史收益率:"<<(mMaxProperty/mPropertyInitial-1)*100<<"%"<<endl;
-            cout<<"盈利次数:"<<mWinTimes<<" "<<"未中奖次数:"<<mLossTimes<<"盈利频率:"<<(float)(mWinTimes)/(mLossTimes+mWinTimes)<<endl;
+            printDetail();
         }
         mDead=true;
     }
@@ -260,10 +264,28 @@ public:
     ,float timesRate=9.8            //收益倍率 收益=timesRate*收益倍数
     ){
         mInterval=interval;
-        for(long long i=0;i<playerNum;i++){
-            Player Player(i+1,propertyInitial,timesInitial,numCount,timesRate);
-            mPlayerVec.push_back(Player);
+        if(PlayMode==4){
+            Player player(1,propertyInitial,timesInitial,numCount,timesRate);
+            if(player.readArchive()){
+                cout<<"已加载存档!"<<endl;
+                player.printDetail();
+            }else{
+                cout<<"请输入玩家的起步资产,单位元(例:1000):";
+                cin>>propertyInitial;
+                player.setPropertyInitialAndProperty(propertyInitial);
+            }
+            mPlayerVec.push_back(player);
+        }else{
+            cout<<"请输入玩家的起步资产,单位元(例:1000):";
+            cin>>propertyInitial;
+            for(long long i=0;i<playerNum;i++){
+                Player player(i+1,propertyInitial,timesInitial,numCount,timesRate);
+                mPlayerVec.push_back(player);
+            }
         }
+            
+
+        
     }
     void gameOver(float maxProfitRateHis,T_MONEY maxProfitHis,long long playTimes){
         long long winPeople=0;
@@ -335,7 +357,7 @@ public:
         cout<<"最高盈利倍率:"<< maxProfitRate*100<< "%" <<"最高盈利金额:"<< maxProfit <<endl;
         cout<<"历史最高盈利倍率:"<< maxProfitRateHis*100<< "%" <<"历史最高盈利金额:"<< maxProfitHis <<
             "最高收益的游戏期数:"<<playTimes<<endl;
-        cout<<"输入任意内容并回车,重新开始游戏!\n";
+        cout<<"输入任意内容并回车,返回主菜单!\n";
         char a;
         cin>>a;
     }
@@ -345,6 +367,7 @@ public:
         T_MONEY maxProfit=0;
         float maxProfitRate=0;
         long long playTimes=0;
+        //是否已经购买号码
         bool inputBetArr=false;
         int numCount=0;
         long long betArr[10]{};
@@ -355,7 +378,8 @@ public:
                 do{
                     numCount=10;
                     cout<<endl;
-                    cout<<"请输入您本期购买的号码(1~10任选),号码之间以空格分隔,以@号结束(不输入为不购买)\n(例:1 2 4 5 6@)(认输请输入q按回车)：";
+                    (*mPlayerVec.begin()).save();
+                    cout<<"请输入您本期购买的号码(1~10任选),号码之间以空格分隔,以@号结束(不输入为不购买)\n(保存并退出请输入q按回车,认输请输入r按回车)(例:1 2 4 5 6@):";
                     for(int i=0;i<11;i++){
                         cin>>betArr[i];
                         if(cin.fail()){
@@ -366,6 +390,9 @@ public:
                                 numCount=i;
                                 break;
                             }else if(a=='q'){
+                                return;
+                            }else if(a=='r'){
+                                (*mPlayerVec.begin()).delArchive();
                                 gameOver(maxProfitRate,maxProfit,playTimes);
                                 return;
                             }else
@@ -391,7 +418,7 @@ public:
             }
             if(PlayMode==4&&(time(NULL)-timeLastTip>=1)){
                 cout<<"\r";
-                cout<<"距开盘还剩"<<(mInterval-(time(NULL)-timeLast))<<"秒  ";
+                cout<<"距开盘还剩"<<(mInterval-(time(NULL)-timeLast))<<"秒                         ";
                 //由于未知原因,安卓系统添加此代码会无法输出开盘时间
                 #ifndef ANDROID
                 timeLastTip=time(NULL);
@@ -514,7 +541,7 @@ int main(){
             case 6:exit(0);
             case 7:{
                 if(GambleRate==1)
-                    GambleRate=GambleRateFault;
+                    GambleRate=GambleRateFaultDefault;
                 else 
                     GambleRate=1;
                 clearScreen();
@@ -528,9 +555,7 @@ int main(){
             case 4:{
                 clearScreen();
                 numCount=-1;
-                cout<<"请输入玩家的起步资产,单位元(例:1000):";
-                cin>>propertyInitial;
-                long long interval;
+                float interval;
                 cout<<"请输入开盘间隔时间(单位/分钟)(例:1):";
                 cin>>interval;
                 cout<<endl;
