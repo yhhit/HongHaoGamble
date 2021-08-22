@@ -87,6 +87,43 @@ public:
         mProfitRate=(((10-mNumCount)/10.0)*(mTimesRate/10))*GambleRate;
         mMaxProperty=mMinProperty=mProperty;
     }
+    //从文件中还原Player
+    Player(string path){
+
+    }
+    void save(){
+        
+        //玩家起始资产
+        T_MONEY mPropertyInitial;
+        //玩家现有资产
+        T_MONEY mProperty;
+        //玩家编号5
+        long long mOrder;
+        //玩家游戏次数
+        long long mPlayTimes=0;
+        //以下变量用于计算翻倍后的下注金额
+        //玩家起始下注倍数
+        long long mTimesInitial;
+        //玩家下次下注倍数,如果中奖重置为玩家起始下注倍数
+        long long mTimes;
+        //玩家连续赔钱总额,中奖后重置
+        long long mLossMoney=0;
+        //玩家 中奖金额后去除本金所能获得的收益 单次
+        double mProfitRate;
+        //以下变量用于下注
+        long long mNumCount;
+        long long mBetArrInitial[10]{2,4,6,8,9,10,1,3,5,7};
+        long long mBetArr[10]{2,4,6,8,9,10,1,3,5,7};
+        //计算盈利金额,盈利金额=倍数*timesRate
+        float mTimesRate;
+        long long mMaxTimes=1;
+        T_MONEY mMaxProperty;
+        T_MONEY mMinProperty;
+        long long mWinTimes=0;
+        long long mLossTimes=0;
+        long long mMaxLossTimes=0;
+        bool mDead=false;
+    }
     T_MONEY getPropertyInitial(){
         return mPropertyInitial;
     }
@@ -139,7 +176,7 @@ public:
         }
         T_MONEY money=mNumCount*mTimes;
         mProperty-=money;
-        if(mProperty<0){
+        if(PlayMode!=4&&mProperty<0){
             mProperty+=money;
             //判断是否资金不足需要重置购买倍数
             if(FailReset){
@@ -262,7 +299,6 @@ public:
                 
         }
 
-
         if(winPeople)
             averProfit=allProfit/winPeople;
         else
@@ -316,30 +352,39 @@ public:
         time_t timeLastTip=time(NULL);
         while(true){
             if(PlayMode==4&&!inputBetArr){
-                numCount=10;
-                cout<<endl;
-                cout<<"请输入您本期购买的号码(1~10任选),号码之间以空格分隔,以#号结束(不输入为不购买)\n(例:1 2 4 5 6#)(退出游戏请输入q按回车)：";
-                for(int i=0;i<11;i++){
-                    cin>>betArr[i];
-                    if(cin.fail()){
-                        char a;
-                        cin.clear();
-                        cin>>a;
-                        if(a=='#'){
-                            numCount=i;
-                            break;
-                        }else if(a=='q'){
-                            gameOver(maxProfitRate,maxProfit,playTimes);
-                            return;
-                        }else
-                            i--;
-                            
+                do{
+                    numCount=10;
+                    cout<<endl;
+                    cout<<"请输入您本期购买的号码(1~10任选),号码之间以空格分隔,以@号结束(不输入为不购买)\n(例:1 2 4 5 6@)(认输请输入q按回车)：";
+                    for(int i=0;i<11;i++){
+                        cin>>betArr[i];
+                        if(cin.fail()){
+                            char a;
+                            cin.clear();
+                            cin>>a;
+                            if(a=='@'){
+                                numCount=i;
+                                break;
+                            }else if(a=='q'){
+                                gameOver(maxProfitRate,maxProfit,playTimes);
+                                return;
+                            }else
+                                i--;
+                        }
                     }
-                        
-                }
+                    cout<<"请输入购买倍数(例:1):";
+                    cin>>times;
+                    T_MONEY property=(*mPlayerVec.begin()).getProperty();
+                    if(property<times*numCount){
+                        cout<<endl;
+                        cout<<"错误:购买失败，资金不足!"<<numCount<<"个号码您最多只能购买"<<property/numCount<<"倍!"<<endl<<endl;
+                        continue;
+                    }else
+                        break;
+                }while(true);
+                
+
                 timeLast=time(NULL);
-                cout<<"请输入购买倍数(例:1):";
-                cin>>times;
                 inputBetArr=true;
                 cout<<"等待开盘中..."<<endl;
                 
