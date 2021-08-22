@@ -19,7 +19,7 @@ class Player{
     //TODO:溢出检测
 private:
     //用户起始资产
-    T_MONEY mPropertyInital;
+    T_MONEY mPropertyInitial;
     //用户现有资产
     T_MONEY mProperty;
     //用户编号5
@@ -28,7 +28,7 @@ private:
     long long mPlayTimes=0;
     //以下变量用于计算翻倍后的下注金额
     //用户起始下注倍数
-    long long mTimesInital;
+    long long mTimesInitial;
     //用户下次下注倍数，如果中奖重置为用户起始下注倍数
     long long mTimes;
     //用户连续赔钱总额，中奖后重置
@@ -61,7 +61,7 @@ private:
     void succ(){
         T_MONEY money=mTimesRate*mTimes;
         mProperty+=money;
-        mTimes=mTimesInital;
+        mTimes=mTimesInitial;
         mLossMoney=0;
         mMaxLossTimes=0;
         mWinTimes++;
@@ -71,19 +71,19 @@ private:
             mMaxProperty=mProperty;
     }
 public:
-    Player(long long order,T_MONEY propertyInital,long long timesInital=1,long long numCount=6,float timesRate=9.8){
+    Player(long long order,T_MONEY propertyInitial,long long timesInitial=1,long long numCount=6,float timesRate=9.8){
         mOrder=order;
-        mPropertyInital=propertyInital;
-        mProperty=mPropertyInital;
-        mTimesInital=timesInital;
-        mTimes=mTimesInital;
+        mPropertyInitial=propertyInitial;
+        mProperty=mPropertyInitial;
+        mTimesInitial=timesInitial;
+        mTimes=mTimesInitial;
         mNumCount=numCount;
         mTimesRate=timesRate;
         mProfitRate=(((10-mNumCount)/10.0)*(mTimesRate/10))*GambleRate;
         mMaxProperty=mMinProperty=mProperty;
     }
-    T_MONEY getPropertyInital(){
-        return mPropertyInital;
+    T_MONEY getPropertyInitial(){
+        return mPropertyInitial;
     }
     T_MONEY getProperty(){
         return mProperty;
@@ -95,24 +95,24 @@ public:
         return mTimes;
     }
     T_MONEY getProfit(){
-        return mProperty-mPropertyInital;
+        return mProperty-mPropertyInitial;
     }
     T_MONEY getMaxProperty(){
         return mMaxProperty;
     }
     void gameOver(){
         if(PlayMode!=3){
+            cout<<endl;
             cout<<"游戏结束,资金不足!"<<endl;
             cout<<"用户编号:"<<mOrder<<endl;
             cout<<"游戏轮数:"<<mPlayTimes<<endl;
-            cout<<"起始资金:"<<getPropertyInital()<<endl;
+            cout<<"起始资金:"<<getPropertyInitial()<<endl;
             cout<<"现有资金:"<<getProperty()<<endl;
             cout<<"总盈利:"<<getProfit()<<endl;
             cout<<"最高连输次数:"<<mMaxLossTimes<<" 最高下注倍数:"<<mMaxTimes<<" "<<"金额:"<<mMaxTimes*6<<endl;
             cout<<"最高所需下注倍数:"<<mMaxTimes<<" "<<"金额:"<<mMaxTimes*6<<endl;
-            cout<<"最高历史资金:"<<mMaxProperty<<" "<<"最低历史资金:"<<mMinProperty<<" 最高历史收益率:"<<(mMaxProperty/mPropertyInital-1)*100<<"%"<<endl;
+            cout<<"最高历史资金:"<<mMaxProperty<<" "<<"最低历史资金:"<<mMinProperty<<" 最高历史收益率:"<<(mMaxProperty/mPropertyInitial-1)*100<<"%"<<endl;
             cout<<"盈利次数:"<<mWinTimes<<" "<<"亏损次数:"<<mLossTimes<<"盈利频率:"<<(float)(mWinTimes)/(mLossTimes+mWinTimes)<<endl;
-            cout<<endl;
         }
         mDead=true;
     }
@@ -128,6 +128,7 @@ public:
         mProperty-=money;
         if(mProperty<0){
             mProperty+=money;
+            //判断是否资金不足需要重置购买倍数
             if(FailReset){
                 if (mTimes==1){
                     gameOver();
@@ -159,9 +160,10 @@ public:
         else
             fail();
         if(PlayMode==1||PlayMode==4){
+            cout<<endl;
             cout<<"用户编号:"<<mOrder<<endl;
             cout<<"游戏轮数:"<<mPlayTimes<<endl;
-            cout<<"起始资金:"<<getPropertyInital()<<endl;
+            cout<<"起始资金:"<<getPropertyInitial()<<endl;
             cout<<"现有资金"<<getProperty()<<endl;
             cout<<"总盈利"<<getProfit()<<endl;
             cout<<"中奖次数:"<<mWinTimes<<" "<<"亏损次数:"<<mLossTimes<<" 中奖频率:"<<(float)(mWinTimes)/(mLossTimes+mWinTimes)<<endl;
@@ -176,7 +178,6 @@ public:
                 cout<<mBetArr[i]<<" ";
             }
             cout<<"本期开奖号码:"<<num<<endl;
-            cout<<endl;
             
         }
 
@@ -195,14 +196,14 @@ private:
 public:
     Plate(long long playerNum       //用户数量
     ,long long interval             //开盘间隔时间,0为不等待，单位秒
-    ,T_MONEY propertyInital         //用户初始资产,单位元
-    ,long long timesInital=1        //用户初始倍数,单位元
+    ,T_MONEY propertyInitial         //用户初始资产,单位元
+    ,long long timesInitial=1        //用户初始倍数,单位元
     ,long long numCount=6           //用户购买号码数量
     ,float timesRate=9.8            //收益倍率 收益=timesRate*收益倍数
     ){
         mInterval=interval;
         for(long long i=0;i<playerNum;i++){
-            Player Player(i+1,propertyInital,timesInital,numCount,timesRate);
+            Player Player(i+1,propertyInitial,timesInitial,numCount,timesRate);
             mPlayerVec.push_back(Player);
         }
     }
@@ -227,15 +228,15 @@ public:
                 lossPeople++;
                 allDeficit+=player.getProfit();
             }
-            if(player.getMaxProperty()/player.getPropertyInital()>=1.1)
+            if(player.getMaxProperty()/player.getPropertyInitial()>=1.1)
                 profitBigger10p++;
-            if(player.getMaxProperty()/player.getPropertyInital()>=10)
+            if(player.getMaxProperty()/player.getPropertyInitial()>=10)
                 profitBigger100p++;
-            if(player.getMaxProperty()/player.getPropertyInital()>=100)
+            if(player.getMaxProperty()/player.getPropertyInitial()>=100)
                 profitBigger1000p++;
             if(player.getProfit()>maxProfit){
                 maxProfit=player.getProfit();
-                maxProfitRate=maxProfit/player.getPropertyInital();
+                maxProfitRate=maxProfit/player.getPropertyInitial();
             }
                 
         }
@@ -249,6 +250,7 @@ public:
             averDeficit=allDeficit/-lossPeople;
         else
             averDeficit=0;
+        cout<<endl;
         cout<<"游戏结束,所有玩家失败!"<<endl;
         if(GambleRate==1)
             cout<<"鸿昊赌徒系数(关)"<<endl;
@@ -266,10 +268,9 @@ public:
         cout<<"最高盈利倍率:"<< maxProfitRate*100<< "%" <<"最高盈利金额:"<< maxProfit <<endl;
         cout<<"历史最高盈利倍率:"<< maxProfitRateHis*100<< "%" <<"历史最高盈利金额:"<< maxProfitHis <<
             "游戏轮数:"<<playTimes<<endl;
-        cout<<"输入任意内容并回车，重新开始游戏!";
+        cout<<"输入任意内容并回车，重新开始游戏!\n";
         char a;
         cin>>a;
-        cout<<endl;
     }
     void run(){
         time_t timeLast=time(NULL);
@@ -286,7 +287,7 @@ public:
                         player.opening(rand()%10+1);
                         if(player.getProfit()>maxProfit){
                             maxProfit=player.getProfit();
-                            maxProfitRate=maxProfit/player.getPropertyInital();
+                            maxProfitRate=maxProfit/player.getPropertyInitial();
                             playTimes=player.getPlayTimes();
                         }
                     }
@@ -313,12 +314,13 @@ void help(){
     cout<<"每局开始，用户从1~10选择需要购买的号码，1个号码1块钱。\n";
     cout<<"可以选择加倍购买，2倍就是一个号码2块钱。\n";
     cout<<"每局开盘会从1~10中随机抽取一个号码作为开奖结果。\n";
-    cout<<"如果购买的号码中包含开奖结果则中奖,否则不中奖。中奖金额为 “中奖系数*倍数” 一般中奖倍数设置为9.8\n";
-    cout<<"比如购买1倍率，6个号码花费6块钱，中奖后获得9.8。\n";
+    cout<<"如果购买的号码中包含开奖结果则中奖,否则不中奖。奖金额为 “中奖系数*购买倍数” 一般中奖系数设置为9.8\n";
+    cout<<"比如购买号码2，3两个号码3倍率，花费2*3=6元，若开奖结果为2或3则中奖后获得9.8*3=29.4元。\n";
     cout<<"很多用户认为，使用翻倍购买法可以稳赚，即第一次购买1倍率，如果输了第二次购买2倍率，如果再输了购买5倍率\n";
-    cout<<"只要赢一次就可以将本金赚回还能再赚几块，从而永不亏损，本程序模拟了此行为。\n";
-    cout<<"鸿昊赌徒系数可以极大的减少用户游戏轮次，提高最终盈利用户比例！但会减少历史最高盈利率！\n";
-    cout<<"输入任意内容并回车，返回主菜单!";
+    cout<<"只要赢一次就可以将本金赚回还能再赚一小部分，从而永不亏损，本程序模拟了此行为。\n";
+    cout<<"鸿昊赌徒系数适量的增大了输掉后翻倍的购买倍数，可以极大的减少用户游戏轮次，但对于用户平均盈利率与用户最高盈利率会产生一定影响！\n";
+    cout<<"资金不足是否重置购买倍数,表示如果使用翻倍购买法资金不足以进行下一次购买，是否重新从最小倍数开始购买。\n"<<endl;
+    cout<<"输入任意内容并回车，返回主菜单!\n";
     char a;
     cin>>a;
 }
@@ -326,7 +328,7 @@ void help(){
 int main(){
     while(true){
         srand((unsigned)time(NULL)); 
-        cout<<"欢迎来到模拟5分钟短线交易游戏!本游戏十分有趣，第一次使用请查看帮助文档。"<<endl;
+        cout<<"欢迎来到鸿昊模拟赌博游戏!第一次使用请查看帮助文档。"<<endl;
         cout<<"请输入游戏模式序号并回车:"<<endl;
         cout<<"1.模拟单用户模式(可以看到每一步交易结果)\n2.模拟多用户模式\n3.模拟超多用户模式(如果多用户模式长时间无响应请使用此模式)\n4.全真模拟"
         <<"\n5.帮助\n6.退出"<<endl;
@@ -338,11 +340,16 @@ int main(){
             cout<<"8.切换资金不足是否重置购买倍数,目前状态(重置)"<<endl;
         else
             cout<<"8.切换资金不足是否重置购买倍数,目前状态(不重置)"<<endl;
-        cout<<"请选择:";
+        static bool faultFlag=false;
+        if(faultFlag){
+            cout<<"输入有误请重新输入:";
+            faultFlag=false;
+        }else
+            cout<<"请选择:";
         cin>>PlayMode;
         if(PlayMode>8||PlayMode<1){
+            faultFlag=true;
             clearScreen();
-            cout<<"输入有误请重新输入!"<<endl<<endl;
             continue;
         }
         long long propertyInitial;
@@ -350,6 +357,7 @@ int main(){
         long long timesInitial;
         long long numPeople;
         if(PlayMode<5){
+            cout<<endl;
             cout<<"请输入购买多少个号码(1~9)，默认按照2,4,6,8,9,10,1,3,5,7顺序购买代码:";
             cin>>numCount;
             cout<<"请输入用户的起步资产:";
