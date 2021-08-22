@@ -276,8 +276,6 @@ public:
             }
             mPlayerVec.push_back(player);
         }else{
-            cout<<"请输入玩家的起步资产,单位元(例:1000):";
-            cin>>propertyInitial;
             for(long long i=0;i<playerNum;i++){
                 Player player(i+1,propertyInitial,timesInitial,numCount,timesRate);
                 mPlayerVec.push_back(player);
