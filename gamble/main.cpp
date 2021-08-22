@@ -317,7 +317,7 @@ public:
             if(PlayMode==4&&!inputBetArr){
                 numCount=10;
                 cout<<endl;
-                cout<<"请输入您本期购买的号码,号码之间以空格分隔,以#号结束(不输入为不购买)(例:1 2 4 5 6#)：";
+                cout<<"请输入您本期购买的号码(1~10任选),号码之间以空格分隔,以#号结束(不输入为不购买)(例:1 2 4 5 6#)：";
                 for(int i=0;i<10;i++){
                     cin>>betArr[i];
                     if(cin.fail()){
