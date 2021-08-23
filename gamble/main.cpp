@@ -168,8 +168,7 @@ public:
         cout<<"起始资金:"<<getPropertyInitial()<<endl;
         cout<<"现有资金:"<<getProperty()<<endl;
         cout<<"总盈利:"<<getProfit()<<endl;
-        cout<<"最高连输次数:"<<mMaxLossTimes<<" 最高下注倍数:"<<mMaxTimes<<" "<<"金额:"<<mMaxTimes*6<<endl;
-        cout<<"最高所需下注倍数:"<<mMaxTimes<<" "<<"金额:"<<mMaxTimes*6<<endl;
+        cout<<"最高连输次数:"<<mMaxLossTimes<<"最高所需下注倍数:"<<mMaxTimes<<" "<<"最高所需下注金额:"<<mMaxTimes*6<<endl;
         cout<<"最高历史资金:"<<mMaxProperty<<" "<<"最低历史资金:"<<mMinProperty<<" 最高历史收益率:"<<(mMaxProperty/mPropertyInitial-1)*100<<"%"<<endl;
         cout<<"中奖次数:"<<mWinTimes<<" "<<"未中奖次数:"<<mLossTimes<<" 中奖频率:"<<(float)(mWinTimes)/(mLossTimes+mWinTimes)<<endl;
     }
