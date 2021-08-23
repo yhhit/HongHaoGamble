@@ -63,6 +63,7 @@ private:
         mLossMoney+=money;
         mTimes=(mLossMoney/mProfitRate)/10+1;
         mMaxLossTimes++;
+        mLossTimes++;
         if(mTimes>mMaxTimes)
             mMaxTimes=mTimes;
         if(mProperty<mMinProperty)
@@ -85,14 +86,13 @@ private:
     }
 public:
     Player(long long order,T_MONEY propertyInitial,long long timesInitial=1,long long numCount=6,float timesRate=9.8){
-        mMaxProperty=mMinProperty=mProperty=mPropertyInitial;
+        mMaxProperty=mMinProperty=mProperty=mPropertyInitial=propertyInitial;
         mOrder=order;
-        mPropertyInitial=propertyInitial;
         mTimesInitial=timesInitial;
         mTimes=mTimesInitial;
         mNumCount=numCount;
         mTimesRate=timesRate;
-        mProfitRate=(((10-mNumCount)/10.0)*(mTimesRate/10))*GambleRate;
+        mProfitRate=((mTimesRate/10)-((mNumCount)/10.0))*GambleRate;
         
     }
     //从文件中还原Player
@@ -238,7 +238,7 @@ public:
             cout<<"起始资金:"<<getPropertyInitial()<<endl;
             cout<<"现有资金"<<getProperty()<<endl;
             cout<<"总盈利"<<getProfit()<<endl;
-            cout<<"盈利率"<<(getProfit()/getPropertyInitial())<<endl;
+            cout<<"盈利率"<<(getProfit()/getPropertyInitial())*100<<"%"<<endl;
             cout<<"中奖次数:"<<mWinTimes<<" "<<"未中奖次数:"<<mLossTimes<<" 中奖频率:"<<(float)(mWinTimes)/(mLossTimes+mWinTimes)<<endl;
             cout<<"本次下注倍率:"<<lTimes<<endl<<"本次下注金额:"<<mNumCount*lTimes<<endl;
             cout<<"本次盈利:";
@@ -320,13 +320,13 @@ public:
             }
             if((player.getMaxProperty()-player.getPropertyInitial())/player.getPropertyInitial()>=0.1)//10%
                 profitBigger10p++;
-            if((player.getMaxProperty()-player.getPropertyInitial())>=0.5)//50%
-                profitBigger10p++;
-            if((player.getMaxProperty()-player.getPropertyInitial())>=1)//100%
+            if((player.getMaxProperty()/player.getPropertyInitial()-1)>=0.5)//50%
+                profitBigger50p++;
+            if((player.getMaxProperty()/player.getPropertyInitial()-1)>=1)//100%
                 profitBigger100p++;
-            if((player.getMaxProperty()-player.getPropertyInitial())>=10)//1000%
+            if((player.getMaxProperty()/player.getPropertyInitial()-1)>=10)//1000%
                 profitBigger1000p++;
-            if((player.getMaxProperty()-player.getPropertyInitial())>=100)//10000%
+            if((player.getMaxProperty()/player.getPropertyInitial()-1)>=100)//10000%
                 profitBigger1000p++;
             if(player.getProfit()>maxProfit){
                 maxProfit=player.getProfit();

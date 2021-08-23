@@ -6,8 +6,6 @@
             "command": "D:\\mingw64\\bin\\g++.exe",
             "args": [
                 "-g",
-                "-fexec-charset=GBK",
-                "-finput-charset=UTF-8",
                 "${file}",
                 "-o",
                 "${fileDirname}\\${fileBasenameNoExtension}.exe"
