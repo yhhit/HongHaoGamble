@@ -238,6 +238,7 @@ public:
             cout<<"起始资金:"<<getPropertyInitial()<<endl;
             cout<<"现有资金"<<getProperty()<<endl;
             cout<<"总盈利"<<getProfit()<<endl;
+            cout<<"盈利率"<<(getProfit()/getPropertyInitial())<<endl;
             cout<<"中奖次数:"<<mWinTimes<<" "<<"未中奖次数:"<<mLossTimes<<" 中奖频率:"<<(float)(mWinTimes)/(mLossTimes+mWinTimes)<<endl;
             cout<<"本次下注倍率:"<<lTimes<<endl<<"本次下注金额:"<<mNumCount*lTimes<<endl;
             cout<<"本次盈利:";
@@ -466,7 +467,7 @@ public:
                             playTimes=player.getPlayTimes();
                         }
                     }
-                    if(time(NULL)-timeLastRunTip>=IntervalRunTip){
+                    if(PlayMode!=4&&time(NULL)-timeLastRunTip>=IntervalRunTip){
                         timeLastRunTip=time(NULL);
                         cout<<"程序仍在运行中... 目前最高盈利倍率:"<< maxProfitRate*100<< "%" <<" 最高盈利金额:"<< maxProfit <<
                             " 最高收益游戏期数:"<<playTimes<<endl;
