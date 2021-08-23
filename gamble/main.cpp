@@ -366,6 +366,7 @@ public:
         cout<<"盈利人数:"<<winPeople<<" 平均盈利金额:"<<averProfit<<" 总盈利金额:"<<allProfit<<endl;
         cout<<"亏损人数:"<<lossPeople<<" 平均亏损金额:"<<averDeficit<<" 总亏损金额:"<<-allDeficit<<endl;
         cout<<"盈利曾经超过10%的玩家数:"<<profitBigger10p<<endl;
+        cout<<"盈利曾经超过50%的玩家数:"<<profitBigger50p<<endl;
         cout<<"盈利超过100%的玩家数:"<<profitBigger100p<<endl;
         cout<<"盈利超过1000%的玩家数:"<<profitBigger1000p<<endl;
         if(PlayMode==4){
