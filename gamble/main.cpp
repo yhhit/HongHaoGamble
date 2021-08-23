@@ -50,17 +50,18 @@ private:
     //计算盈利金额,盈利金额=倍数*timesRate
     float mTimesRate;
     long long mMaxTimes=1;
-    T_MONEY mMaxProperty;
-    T_MONEY mMinProperty;
     long long mWinTimes=0;
     long long mLossTimes=0;
     long long mMaxLossTimes=0;
+    //最高收益期数
+    long long mMaxPropertyTimes=0;
+    T_MONEY mMaxProperty;
+    T_MONEY mMinProperty;
     bool mDead=false;
     void fail(){
         T_MONEY money=mNumCount*mTimes;
         mLossMoney+=money;
         mTimes=(mLossMoney/mProfitRate)/10+1;
-        mLossTimes++;
         mMaxLossTimes++;
         if(mTimes>mMaxTimes)
             mMaxTimes=mTimes;
@@ -76,20 +77,23 @@ private:
         mWinTimes++;
         if(mProperty<mMinProperty)
             mMinProperty=mProperty;
-        if(mProperty>mMaxProperty)
+        if(mProperty>mMaxProperty){
+            mMaxPropertyTimes=mPlayTimes;
             mMaxProperty=mProperty;
+        }
+            
     }
 public:
     Player(long long order,T_MONEY propertyInitial,long long timesInitial=1,long long numCount=6,float timesRate=9.8){
+        mMaxProperty=mMinProperty=mProperty=mPropertyInitial;
         mOrder=order;
         mPropertyInitial=propertyInitial;
-        mProperty=mPropertyInitial;
         mTimesInitial=timesInitial;
         mTimes=mTimesInitial;
         mNumCount=numCount;
         mTimesRate=timesRate;
         mProfitRate=(((10-mNumCount)/10.0)*(mTimesRate/10))*GambleRate;
-        mMaxProperty=mMinProperty=mProperty;
+        
     }
     //从文件中还原Player
     bool readArchive(){
@@ -119,11 +123,17 @@ public:
         file.write((const char*)this,sizeof(*this));
         file.close();
     }
+    T_MONEY getMaxProperty(){
+        return mMaxProperty;
+    }
+    T_MONEY getMinProperty(){
+        return mMinProperty;
+    }
     void delArchive(){
         remove(SavePathSimulation.c_str());
     }
     void setPropertyInitialAndProperty(T_MONEY val){
-        mPropertyInitial=mProperty=val;
+        mMaxProperty=mMinProperty=mPropertyInitial=mProperty=val;
     }
     T_MONEY getPropertyInitial(){
         return mPropertyInitial;
@@ -140,9 +150,6 @@ public:
     T_MONEY getProfit(){
         return mProperty-mPropertyInitial;
     }
-    T_MONEY getMaxProperty(){
-        return mMaxProperty;
-    }
     void setBetArr(int offset,long long val){
         mBetArr[offset]=val;
     }
@@ -151,6 +158,9 @@ public:
     }
     void setTimes(long long times){
         mTimes=times;
+    }
+    long long getMaxPropertyTimes(){
+        return mMaxPropertyTimes;
     }
     void printDetail(){
         cout<<"玩家编号:"<<mOrder<<endl;
@@ -161,7 +171,7 @@ public:
         cout<<"最高连输次数:"<<mMaxLossTimes<<" 最高下注倍数:"<<mMaxTimes<<" "<<"金额:"<<mMaxTimes*6<<endl;
         cout<<"最高所需下注倍数:"<<mMaxTimes<<" "<<"金额:"<<mMaxTimes*6<<endl;
         cout<<"最高历史资金:"<<mMaxProperty<<" "<<"最低历史资金:"<<mMinProperty<<" 最高历史收益率:"<<(mMaxProperty/mPropertyInitial-1)*100<<"%"<<endl;
-        cout<<"中奖次数:"<<mWinTimes<<" "<<"未中奖次数:"<<mLossTimes<<"中奖频率:"<<(float)(mWinTimes)/(mLossTimes+mWinTimes)<<endl;
+        cout<<"中奖次数:"<<mWinTimes<<" "<<"未中奖次数:"<<mLossTimes<<" 中奖频率:"<<(float)(mWinTimes)/(mLossTimes+mWinTimes)<<endl;
     }
     void gameOver(){
         if(PlayMode!=3){
@@ -295,6 +305,7 @@ public:
         T_MONEY maxProfit=0;
         long long maxProfitRate=0;
         long long profitBigger10p=0;
+        long long profitBigger50p=0;
         long long profitBigger100p=0;
         long long profitBigger1000p=0;
         for(Player & player:mPlayerVec){
@@ -306,11 +317,15 @@ public:
                 lossPeople++;
                 allDeficit+=player.getProfit();
             }
-            if(player.getMaxProperty()/player.getPropertyInitial()>=1.1)
+            if((player.getMaxProperty()-player.getPropertyInitial())/player.getPropertyInitial()>=0.1)//10%
                 profitBigger10p++;
-            if(player.getMaxProperty()/player.getPropertyInitial()>=10)
+            if((player.getMaxProperty()-player.getPropertyInitial())>=0.5)//50%
+                profitBigger10p++;
+            if((player.getMaxProperty()-player.getPropertyInitial())>=1)//100%
                 profitBigger100p++;
-            if(player.getMaxProperty()/player.getPropertyInitial()>=100)
+            if((player.getMaxProperty()-player.getPropertyInitial())>=10)//1000%
+                profitBigger1000p++;
+            if((player.getMaxProperty()-player.getPropertyInitial())>=100)//10000%
                 profitBigger1000p++;
             if(player.getProfit()>maxProfit){
                 maxProfit=player.getProfit();
@@ -352,9 +367,18 @@ public:
         cout<<"盈利曾经超过10%的玩家数:"<<profitBigger10p<<endl;
         cout<<"盈利超过100%的玩家数:"<<profitBigger100p<<endl;
         cout<<"盈利超过1000%的玩家数:"<<profitBigger1000p<<endl;
-        cout<<"最高盈利倍率:"<< maxProfitRate*100<< "%" <<"最高盈利金额:"<< maxProfit <<endl;
-        cout<<"历史最高盈利倍率:"<< maxProfitRateHis*100<< "%" <<"历史最高盈利金额:"<< maxProfitHis <<
-            "最高收益的游戏期数:"<<playTimes<<endl;
+        if(PlayMode==4){
+            auto player=(*mPlayerVec.begin());
+            cout<<"盈利倍率:"<< player.getProfit()/player.getPropertyInitial() *100<< "%" <<" 盈利金额:"<< player.getProfit() <<endl;
+            cout<<"历史最高盈利倍率:"<< (player.getMaxProperty()-player.getPropertyInitial())/player.getPropertyInitial()*100<<
+                "%" <<" 历史最高盈利金额:"<< (player.getMaxProperty()-player.getPropertyInitial()) <<
+                " 最高收益的游戏期数:"<<player.getMaxPropertyTimes()<<endl;
+        }else{
+            cout<<"最高盈利倍率:"<< maxProfitRate*100<< "%" <<" 最高盈利金额:"<< maxProfit <<endl;
+            cout<<"历史最高盈利倍率:"<< maxProfitRateHis*100<< "%" <<" 历史最高盈利金额:"<< maxProfitHis <<
+                " 最高收益的游戏期数:"<<playTimes<<endl;
+        }
+
         cout<<"输入任意内容并回车,返回主菜单!\n";
         char a;
         cin>>a;
@@ -417,10 +441,9 @@ public:
             if(PlayMode==4&&(time(NULL)-timeLastTip>=1)){
                 cout<<"\r";
                 cout<<"距开盘还剩"<<(mInterval-(time(NULL)-timeLast))<<"秒                         ";
-                //由于未知原因,安卓系统添加此代码会无法输出开盘时间
-                #ifndef ANDROID
+                fflush(stdout);
+                //此处linux环境下无法正常显示的问题已解决，因为linux并没有自动刷新缓冲区
                 timeLastTip=time(NULL);
-                #endif
             }
             
             if(!mInterval?true:((time(NULL)-timeLast>=mInterval))){
@@ -446,7 +469,7 @@ public:
                     if(time(NULL)-timeLastRunTip>=IntervalRunTip){
                         timeLastRunTip=time(NULL);
                         cout<<"程序仍在运行中... 目前最高盈利倍率:"<< maxProfitRate*100<< "%" <<" 最高盈利金额:"<< maxProfit <<
-                            "游戏期数:"<<playTimes<<endl;
+                            " 最高收益游戏期数:"<<playTimes<<endl;
                     }
                 }
                 timeLast=time(NULL);
@@ -488,23 +511,26 @@ void help(){
     cout<<"输入任意内容并回车,返回主菜单!\n";
     char a;
     cin>>a;
+    clearScreen();
 }
 
 int main(){
     while(true){
+    head:
         srand((unsigned)time(NULL)); 
             cout<<"欢迎来到“赌博中的数学”,第一次使用请查看帮助文档。"<<endl;
         cout<<"请输入游戏模式序号并回车:"<<endl;
         cout<<"1.模拟单玩家模式(自动)(可以看到每一步交易结果)\n2.模拟多玩家模式(自动)\n3.模拟超多玩家模式(自动)(如果多玩家模式长时间无响应请使用此模式)\n4.全真模拟(手动)(模拟真实赌博体验)"
-        <<"\n5.帮助\n6.退出"<<endl;
+            <<endl;
         if(GambleRate==1)
-            cout<<"7.切换鸿昊赌徒系数,目前状态(关)(自动模式的配置)"<<endl;
+            cout<<"5.切换鸿昊赌徒系数,目前状态(关)(自动模式的配置)"<<endl;
         else
-            cout<<"7.切换鸿昊赌徒系数,目前状态(开)(自动模式的配置)"<<endl;
+            cout<<"5.切换鸿昊赌徒系数,目前状态(开)(自动模式的配置)"<<endl;
         if(FailReset)
-            cout<<"8.切换资金不足是否重置购买倍数,目前状态(重置)(自动模式的配置)"<<endl;
+            cout<<"6.切换资金不足是否重置购买倍数,目前状态(重置)(自动模式的配置)"<<endl;
         else
-            cout<<"8.切换资金不足是否重置购买倍数,目前状态(不重置)(自动模式的配置)"<<endl;
+            cout<<"6.切换资金不足是否重置购买倍数,目前状态(不重置)(自动模式的配置)"<<endl;
+        cout<<"h.帮助\nq.退出"<<endl;
 #ifdef ANDROID
         cout<<"\n提示：由于安卓系统限制，应用在锁屏或后台情况下可能会终止，请确保手机不会锁屏或在后台停留太久，建议使用电脑版！可访问www.yhhit.xyz下载!\n\n";
         cout<<"提示：更新应用必须卸载之前版本，否则虽然安装成功但是软件内容并不会更新!\n\n";
@@ -515,8 +541,24 @@ int main(){
             faultFlag=false;
         }else
             cout<<"请选择:";
-        cin>>PlayMode;
-        if(PlayMode>8||PlayMode<1){
+        do{
+            if(cin.fail()){
+                cin.clear();
+                char a;
+                cin>>a;
+                switch (a)
+                {
+                case 'h':help();goto head;
+                case 'q':exit(0);goto head;
+                default:
+                    break;
+                }
+            }else
+                cin>>PlayMode;
+            
+        }while(cin.fail());
+        
+        if(PlayMode>6||PlayMode<1){
             faultFlag=true;
             clearScreen();
             continue;
@@ -535,9 +577,7 @@ int main(){
             cin>>timesInitial;
         }
         switch(PlayMode){
-            case 5:help();break;
-            case 6:exit(0);
-            case 7:{
+            case 5:{
                 if(GambleRate==1)
                     GambleRate=GambleRateFaultDefault;
                 else 
@@ -545,7 +585,7 @@ int main(){
                 clearScreen();
                 continue;
             }
-            case 8:{
+            case 6:{
                 FailReset=!FailReset;
                 clearScreen();
                 continue;
