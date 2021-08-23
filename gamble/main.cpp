@@ -535,7 +535,6 @@ int main(){
         cout<<"h.帮助\nq.退出"<<endl;
 #ifdef ANDROID
         cout<<"\n提示：由于安卓系统限制，应用在锁屏或后台情况下可能会终止，请确保手机不会锁屏或在后台停留太久，建议使用电脑版！可访问www.yhhit.xyz下载!\n\n";
-        cout<<"提示：更新应用必须卸载之前版本，否则虽然安装成功但是软件内容并不会更新!\n\n";
 #endif
         static bool faultFlag=false;
         if(faultFlag){
