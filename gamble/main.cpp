@@ -441,7 +441,7 @@ public:
             }
             if(PlayMode==4&&(time(NULL)-timeLastTip>=1)){
                 cout<<"\r";
-                cout<<"距开盘还剩"<<(mInterval-(time(NULL)-timeLast))<<"秒                         ";
+                cout<<"距开盘还剩"<<(mInterval-(time(NULL)-timeLast))<<"秒         ";
                 fflush(stdout);
                 //此处linux环境下无法正常显示的问题已解决，因为linux并没有自动刷新缓冲区
                 timeLastTip=time(NULL);
